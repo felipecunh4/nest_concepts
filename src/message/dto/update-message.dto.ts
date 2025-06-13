@@ -5,5 +5,5 @@ import { IsBoolean, IsOptional } from 'class-validator';
 export class UpdateMessageDTO extends PartialType(CreateMessageDTO) {
   @IsBoolean()
   @IsOptional()
-  readonly lido?: boolean;
+  readonly read?: boolean;
 }

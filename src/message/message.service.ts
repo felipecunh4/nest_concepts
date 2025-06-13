@@ -12,18 +12,6 @@ export class MessageService {
     private readonly messageRepository: Repository<Message>,
   ) {}
 
-  private lastId = 1;
-  private msg: Message[] = [
-    {
-      id: 1,
-      to: 'kelsier',
-      from: 'percy',
-      text: 'this is my first message',
-      read: false,
-      date: new Date(),
-    },
-  ];
-
   throwNotFoundError() {
     throw new NotFoundException('Message not found');
   }
@@ -46,47 +34,38 @@ export class MessageService {
     return msg;
   }
 
-  create(payload: CreateMessageDTO) {
-    this.lastId++;
-
-    const id = this.lastId;
+  async create(payload: CreateMessageDTO) {
     const newMsg = {
-      id,
+      ...payload,
       read: false,
       date: new Date(),
-      ...payload,
     };
 
-    this.msg.push(newMsg);
-
-    return newMsg;
+    return await this.messageRepository.save(newMsg);
   }
 
-  update(id: number, payload: UpdateMessageDTO) {
-    const msgIndex = this.msg.findIndex(item => item.id === id);
-
-    if (msgIndex < 0) this.throwNotFoundError();
-
-    const msgToUpdate = this.msg[msgIndex];
-    const newMsg = {
-      ...msgToUpdate,
-      ...payload,
+  async update(id: number, payload: UpdateMessageDTO) {
+    const payloadToUpdate = {
+      read: payload?.read,
+      text: payload?.text,
     };
+    const msgToBeUpdated = await this.messageRepository.preload({
+      id,
+      ...payloadToUpdate,
+    });
 
-    this.msg[msgIndex] = newMsg;
+    if (!msgToBeUpdated) this.throwNotFoundError();
 
-    return newMsg;
+    await this.messageRepository.save(msgToBeUpdated!);
+
+    return msgToBeUpdated;
   }
 
-  remove(id: number) {
-    const msgIndex = this.msg.findIndex(item => item.id === id);
+  async remove(id: number) {
+    const msgToBeRemoved = await this.messageRepository.findOneBy({ id });
 
-    if (msgIndex < 0) this.throwNotFoundError();
+    if (!msgToBeRemoved) this.throwNotFoundError();
 
-    const msgToBeRemoved = this.msg[msgIndex];
-
-    this.msg.splice(msgIndex, 1);
-
-    return msgToBeRemoved;
+    return await this.messageRepository.remove(msgToBeRemoved!);
   }
 }
