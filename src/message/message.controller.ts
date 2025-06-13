@@ -10,10 +10,14 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import { MessageService } from './message.service';
 
-interface IMessagePayload {
+export interface IMessagePayload {
+  to: string;
+  from: string;
   text: string;
-  author: string;
+  read: boolean;
+  date: Date;
 }
 
 interface IGetMessageParams {
@@ -23,22 +27,24 @@ interface IGetMessageParams {
 
 @Controller('message')
 export class MessageController {
+  constructor(private readonly messageService: MessageService) {}
   // teste de como faz pra alterar o codigo http do retorno da request
   @HttpCode(HttpStatus.CREATED)
   @Get()
-  findAll(@Query() queryString: IGetMessageParams) {
-    const { limit = 10, offset = 0 } = queryString;
-    return `all my messages. limit is ${limit} on offset ${offset}`;
+  findAll(@Query() queryString?: IGetMessageParams) {
+    console.log('qs', queryString);
+
+    return this.messageService.findAll();
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return `a message with id: ${id}`;
+    return this.messageService.findOne(id);
   }
 
   @Post('create')
   create(@Body() payload: IMessagePayload) {
-    return `my author is ${payload.author}, \nthe text is: ${payload.text}`;
+    return this.messageService.create(payload);
   }
 
   // no update, existe uma diferença entre PATCH e PUT
@@ -46,11 +52,11 @@ export class MessageController {
   // PUT atualiza o objeto INTEIRO, assim precisando de todas as infos no payload da req
   @Patch('update/:id')
   udpate(@Param('id') id: string, @Body() payload: Partial<IMessagePayload>) {
-    return `the new value of ${id} is: ${JSON.stringify(payload)}`;
+    return this.messageService.update(id, payload);
   }
 
   @Delete('delete/:id')
   remove(@Param('id') id: string) {
-    return `delete id: ${id}`;
+    return this.messageService.remove(id);
   }
 }
