@@ -49,8 +49,8 @@ export class MessageService {
     return newMsg;
   }
 
-  update(id: string, payload: UpdateMessageDTO) {
-    const msgIndex = this.msg.findIndex((item) => item.id === +id);
+  update(id: number, payload: UpdateMessageDTO) {
+    const msgIndex = this.msg.findIndex((item) => item.id === id);
 
     if (msgIndex < 0) this.throwNotFoundError();
 
@@ -65,8 +65,8 @@ export class MessageService {
     return newMsg;
   }
 
-  remove(id: string) {
-    const msgIndex = this.msg.findIndex((item) => item.id === +id);
+  remove(id: number) {
+    const msgIndex = this.msg.findIndex((item) => item.id === id);
 
     if (msgIndex < 0) this.throwNotFoundError();
 

@@ -6,6 +6,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  ParseIntPipe,
   Patch,
   Post,
   Query,
@@ -45,12 +46,16 @@ export class MessageController {
   // PATCH atualiza algum valor de um objeto, como se fosse um "remendo"
   // PUT atualiza o objeto INTEIRO, assim precisando de todas as infos no payload da req
   @Patch('update/:id')
-  udpate(@Param('id') id: string, @Body() payload: UpdateMessageDTO) {
+  udpate(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() payload: UpdateMessageDTO,
+  ) {
     return this.messageService.update(id, payload);
   }
 
+  // ParseInPipe e outros tipos de pipe é a alternativa caso o transform não for true no main.ts
   @Delete('delete/:id')
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseIntPipe) id: number) {
     return this.messageService.remove(id);
   }
 }
