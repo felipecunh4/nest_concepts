@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Message } from './entities/message.entity';
 import { IMessagePayload } from './message.controller';
 
@@ -16,12 +16,20 @@ export class MessageService {
     },
   ];
 
+  throwNotFoundError() {
+    throw new NotFoundException('Message not found');
+  }
+
   findAll() {
     return this.msg;
   }
 
   findOne(id: string) {
-    return this.msg.find((item) => item.id === +id);
+    const msg = this.msg.find((item) => item.id === +id);
+
+    if (!msg) this.throwNotFoundError();
+
+    return msg;
   }
 
   create(payload: IMessagePayload) {
@@ -40,31 +48,28 @@ export class MessageService {
   update(id: string, payload: Partial<IMessagePayload>) {
     const msgIndex = this.msg.findIndex((item) => item.id === +id);
 
-    if (msgIndex >= 0) {
-      const msgToUpdate = this.msg[msgIndex];
+    if (msgIndex < 0) this.throwNotFoundError();
 
-      const newMsg = {
-        ...msgToUpdate,
-        ...payload,
-      };
+    const msgToUpdate = this.msg[msgIndex];
+    const newMsg = {
+      ...msgToUpdate,
+      ...payload,
+    };
 
-      this.msg[msgIndex] = newMsg;
+    this.msg[msgIndex] = newMsg;
 
-      return newMsg;
-    }
-
-    return `could not find the id: ${id}`;
+    return newMsg;
   }
 
   remove(id: string) {
     const msgIndex = this.msg.findIndex((item) => item.id === +id);
 
-    if (msgIndex >= 0) {
-      this.msg.splice(msgIndex, 1);
+    if (msgIndex < 0) this.throwNotFoundError();
 
-      return 'message removed successfully!';
-    }
+    const msgToBeRemoved = this.msg[msgIndex];
 
-    return `could not find the id: ${id}`;
+    this.msg.splice(msgIndex, 1);
+
+    return msgToBeRemoved;
   }
 }
