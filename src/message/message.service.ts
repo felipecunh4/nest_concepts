@@ -2,9 +2,16 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { Message } from './entities/message.entity';
 import { CreateMessageDTO } from './dto/create-message.dto';
 import { UpdateMessageDTO } from './dto/update-message.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class MessageService {
+  constructor(
+    @InjectRepository(Message)
+    private readonly messageRepository: Repository<Message>,
+  ) {}
+
   private lastId = 1;
   private msg: Message[] = [
     {
@@ -21,12 +28,18 @@ export class MessageService {
     throw new NotFoundException('Message not found');
   }
 
-  findAll() {
-    return this.msg;
+  async findAll() {
+    const msg = this.messageRepository.find();
+
+    return msg;
   }
 
-  findOne(id: string) {
-    const msg = this.msg.find((item) => item.id === +id);
+  async findOne(id: number) {
+    const msg = await this.messageRepository.findOne({
+      where: {
+        id,
+      },
+    });
 
     if (!msg) this.throwNotFoundError();
 
@@ -50,7 +63,7 @@ export class MessageService {
   }
 
   update(id: number, payload: UpdateMessageDTO) {
-    const msgIndex = this.msg.findIndex((item) => item.id === id);
+    const msgIndex = this.msg.findIndex(item => item.id === id);
 
     if (msgIndex < 0) this.throwNotFoundError();
 
@@ -66,7 +79,7 @@ export class MessageService {
   }
 
   remove(id: number) {
-    const msgIndex = this.msg.findIndex((item) => item.id === id);
+    const msgIndex = this.msg.findIndex(item => item.id === id);
 
     if (msgIndex < 0) this.throwNotFoundError();
 
