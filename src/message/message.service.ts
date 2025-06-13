@@ -4,12 +4,14 @@ import { CreateMessageDTO } from './dto/create-message.dto';
 import { UpdateMessageDTO } from './dto/update-message.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class MessageService {
   constructor(
     @InjectRepository(Message)
     private readonly messageRepository: Repository<Message>,
+    private readonly usersService: UsersService,
   ) {}
 
   throwNotFoundError() {
@@ -17,7 +19,22 @@ export class MessageService {
   }
 
   async findAll() {
-    const msg = this.messageRepository.find();
+    const msg = this.messageRepository.find({
+      relations: ['to', 'from'],
+      order: {
+        id: 'desc',
+      },
+      select: {
+        to: {
+          id: true,
+          name: true,
+        },
+        from: {
+          id: true,
+          name: true,
+        },
+      },
+    });
 
     return msg;
   }
@@ -27,38 +44,63 @@ export class MessageService {
       where: {
         id,
       },
+      relations: ['to', 'from'],
+      order: {
+        id: 'desc',
+      },
+      select: {
+        to: {
+          id: true,
+          name: true,
+        },
+        from: {
+          id: true,
+          name: true,
+        },
+      },
     });
 
     if (!msg) this.throwNotFoundError();
 
-    return msg;
+    return msg!;
   }
 
   async create(payload: CreateMessageDTO) {
-    const newMsg = {
-      ...payload,
+    const from = await this.usersService.findOne(payload.fromId);
+    const to = await this.usersService.findOne(payload.toId);
+
+    const msgData = {
+      text: payload.text,
+      from: from,
+      to: to,
       read: false,
       date: new Date(),
     };
 
-    return await this.messageRepository.save(newMsg);
+    const newMsg = this.messageRepository.create(msgData);
+
+    await this.messageRepository.save(newMsg);
+    return {
+      ...msgData,
+      from: {
+        id: msgData.from.id,
+        name: msgData.from.name,
+      },
+      to: {
+        id: msgData.to.id,
+        name: msgData.to.name,
+      },
+    };
   }
 
   async update(id: number, payload: UpdateMessageDTO) {
-    const payloadToUpdate = {
-      read: payload?.read,
-      text: payload?.text,
-    };
-    const msgToBeUpdated = await this.messageRepository.preload({
-      id,
-      ...payloadToUpdate,
-    });
+    const msg = await this.findOne(id);
 
-    if (!msgToBeUpdated) this.throwNotFoundError();
+    msg.text = payload?.text ?? msg.text;
+    msg.read = payload?.read ?? msg.read;
+    await this.messageRepository.save(msg);
 
-    await this.messageRepository.save(msgToBeUpdated!);
-
-    return msgToBeUpdated;
+    return msg;
   }
 
   async remove(id: number) {
