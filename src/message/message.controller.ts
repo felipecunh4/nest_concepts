@@ -11,14 +11,8 @@ import {
   Query,
 } from '@nestjs/common';
 import { MessageService } from './message.service';
-
-export interface IMessagePayload {
-  to: string;
-  from: string;
-  text: string;
-  read: boolean;
-  date: Date;
-}
+import { CreateMessageDTO } from './dto/create-message.dto';
+import { UpdateMessageDTO } from './dto/update-message.dto';
 
 interface IGetMessageParams {
   limit?: string;
@@ -43,7 +37,7 @@ export class MessageController {
   }
 
   @Post('create')
-  create(@Body() payload: IMessagePayload) {
+  create(@Body() payload: CreateMessageDTO) {
     return this.messageService.create(payload);
   }
 
@@ -51,7 +45,7 @@ export class MessageController {
   // PATCH atualiza algum valor de um objeto, como se fosse um "remendo"
   // PUT atualiza o objeto INTEIRO, assim precisando de todas as infos no payload da req
   @Patch('update/:id')
-  udpate(@Param('id') id: string, @Body() payload: Partial<IMessagePayload>) {
+  udpate(@Param('id') id: string, @Body() payload: UpdateMessageDTO) {
     return this.messageService.update(id, payload);
   }
 
