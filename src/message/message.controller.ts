@@ -6,7 +6,6 @@ import {
   HttpCode,
   HttpStatus,
   Param,
-  ParseIntPipe,
   Patch,
   Post,
   Query,
@@ -14,11 +13,7 @@ import {
 import { MessageService } from './message.service';
 import { CreateMessageDTO } from './dto/create-message.dto';
 import { UpdateMessageDTO } from './dto/update-message.dto';
-
-interface IGetMessageParams {
-  limit?: string;
-  offset?: string;
-}
+import { PaginationDTO } from 'src/common/dto/pagination.dto';
 
 @Controller('message')
 export class MessageController {
@@ -26,14 +21,12 @@ export class MessageController {
   // teste de como faz pra alterar o codigo http do retorno da request
   @HttpCode(HttpStatus.CREATED)
   @Get()
-  findAll(@Query() queryString?: IGetMessageParams) {
-    console.log('qs', queryString);
-
-    return this.messageService.findAll();
+  findAll(@Query() paginationDto: PaginationDTO) {
+    return this.messageService.findAll(paginationDto);
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number) {
+  findOne(@Param('id') id: number) {
     return this.messageService.findOne(id);
   }
 
@@ -46,16 +39,13 @@ export class MessageController {
   // PATCH atualiza algum valor de um objeto, como se fosse um "remendo"
   // PUT atualiza o objeto INTEIRO, assim precisando de todas as infos no payload da req
   @Patch('update/:id')
-  udpate(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() payload: UpdateMessageDTO,
-  ) {
+  udpate(@Param('id') id: number, @Body() payload: UpdateMessageDTO) {
     return this.messageService.update(id, payload);
   }
 
   // ParseInPipe e outros tipos de pipe é a alternativa caso o transform não for true no main.ts
   @Delete('delete/:id')
-  remove(@Param('id', ParseIntPipe) id: number) {
+  remove(@Param('id') id: number) {
     return this.messageService.remove(id);
   }
 }
