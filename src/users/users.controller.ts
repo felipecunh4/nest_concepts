@@ -8,6 +8,7 @@ import {
   Delete,
   UseInterceptors,
   Req,
+  UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -15,6 +16,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { ChangeDataInterceptor } from 'src/common/interceptors/change-data.interceptor';
 import { AuthTokenInterceptor } from 'src/common/interceptors/auth-token.interceptor';
 import { Request } from 'express';
+import { IsAdminGuard } from 'src/common/guards/is-admin.guard';
 
 @Controller('users')
 export class UsersController {
@@ -27,6 +29,7 @@ export class UsersController {
 
   @Get()
   @UseInterceptors(ChangeDataInterceptor, AuthTokenInterceptor)
+  @UseGuards(IsAdminGuard)
   findAll(@Req() req: Request) {
     console.log(
       '[UserController] Getting user on request header...',
