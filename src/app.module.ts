@@ -11,6 +11,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersModule } from './users/users.module';
 import { SimpleMiddleware } from './common/middlewares/simple.middleware';
 import { AnotherMiddleware } from './common/middlewares/another.middleware';
+import { APP_FILTER } from '@nestjs/core';
+import { MyExceptionFilter } from './common/exception-filters/my-exception.filter';
+import { ErrorExceptionFilter } from './common/exception-filters/error-exception.filter';
 
 @Module({
   imports: [
@@ -27,7 +30,19 @@ import { AnotherMiddleware } from './common/middlewares/another.middleware';
     UsersModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    // Os Exceptions Filters, Guards, Interceptors
+    // são declarados dessa forma para que aconteça a injeção de dependencia
+    {
+      provide: APP_FILTER,
+      useClass: MyExceptionFilter,
+    },
+    {
+      provide: APP_FILTER,
+      useClass: ErrorExceptionFilter,
+    },
+  ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
