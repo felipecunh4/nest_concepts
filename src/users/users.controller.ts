@@ -7,12 +7,14 @@ import {
   Param,
   Delete,
   UseInterceptors,
+  Req,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ChangeDataInterceptor } from 'src/common/interceptors/change-data.interceptor';
 import { AuthTokenInterceptor } from 'src/common/interceptors/auth-token.interceptor';
+import { Request } from 'express';
 
 @Controller('users')
 export class UsersController {
@@ -25,7 +27,11 @@ export class UsersController {
 
   @Get()
   @UseInterceptors(ChangeDataInterceptor, AuthTokenInterceptor)
-  findAll() {
+  findAll(@Req() req: Request) {
+    console.log(
+      '[UserController] Getting user on request header...',
+      req['user'],
+    );
     return this.usersService.findAll();
   }
 
