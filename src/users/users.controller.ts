@@ -6,10 +6,13 @@ import {
   Patch,
   Param,
   Delete,
+  UseInterceptors,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { ChangeDataInterceptor } from 'src/common/interceptors/change-data.interceptor';
+import { AuthTokenInterceptor } from 'src/common/interceptors/auth-token.interceptor';
 
 @Controller('users')
 export class UsersController {
@@ -21,6 +24,7 @@ export class UsersController {
   }
 
   @Get()
+  @UseInterceptors(ChangeDataInterceptor, AuthTokenInterceptor)
   findAll() {
     return this.usersService.findAll();
   }
