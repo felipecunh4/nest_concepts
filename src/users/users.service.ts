@@ -9,12 +9,14 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
+import { HashingService } from 'src/auth/hashing/hashing.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
+    private readonly hashingService: HashingService,
   ) {}
 
   throwNotFoundError() {
@@ -23,8 +25,10 @@ export class UsersService {
 
   async create(payload: CreateUserDto) {
     try {
+      const passwordHash = await this.hashingService.hash(payload.password);
+
       const newUser = this.usersRepository.create({
-        passwordHash: payload.password,
+        passwordHash,
         ...payload,
       });
 
@@ -57,8 +61,14 @@ export class UsersService {
   async update(id: number, payload: UpdateUserDto) {
     const userData = {
       name: payload?.name,
-      passwordHash: payload?.password,
     };
+
+    if (payload?.password) {
+      const passwordHash = await this.hashingService.hash(payload.password);
+
+      userData['passwordHash'] = passwordHash;
+    }
+
     const userToBeUpdated = await this.usersRepository.preload({
       id,
       ...userData,

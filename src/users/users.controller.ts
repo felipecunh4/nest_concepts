@@ -17,8 +17,10 @@ import { ChangeDataInterceptor } from 'src/common/interceptors/change-data.inter
 import { AuthTokenInterceptor } from 'src/common/interceptors/auth-token.interceptor';
 import { Request } from 'express';
 import { IsAdminGuard } from 'src/common/guards/is-admin.guard';
+import { AuthTokenGuard } from 'src/auth/guard/auth-token.guard';
 
 @Controller('users')
+@UseGuards(AuthTokenGuard)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 

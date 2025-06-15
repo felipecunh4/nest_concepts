@@ -16,6 +16,7 @@ import { ErrorExceptionFilter } from '../common/exception-filters/error-exceptio
 import { ConfigModule, ConfigType } from '@nestjs/config';
 import * as Joi from 'joi';
 import appConfig from './app.config';
+import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import appConfig from './app.config';
     }),
     MessageModule,
     UsersModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [
