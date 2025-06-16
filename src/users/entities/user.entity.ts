@@ -35,4 +35,7 @@ export class User {
 
   @OneToMany(() => Message, msg => msg.to)
   msgReceived: Message[];
+
+  @Column({ default: true })
+  active: boolean;
 }

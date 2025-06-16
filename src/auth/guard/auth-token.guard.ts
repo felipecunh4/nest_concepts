@@ -10,15 +10,10 @@ import { Request } from 'express';
 import jwtConfig from '../config/jwt.config';
 import { ConfigType } from '@nestjs/config';
 import { REQUEST_TOKEN_PAYLOAD_KEY } from '../auth.constants';
-
-interface IJwtPayload {
-  sub: number;
-  email: string;
-  iat: number;
-  exp: number;
-  aud: string;
-  iss: string;
-}
+import { TokenPayloadDTO } from '../dto/token-payload.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { User } from 'src/users/entities/user.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class AuthTokenGuard implements CanActivate {
@@ -26,6 +21,8 @@ export class AuthTokenGuard implements CanActivate {
     private readonly jwtService: JwtService,
     @Inject(jwtConfig.KEY)
     private readonly jwtConfiguration: ConfigType<typeof jwtConfig>,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -35,10 +32,17 @@ export class AuthTokenGuard implements CanActivate {
     if (!token) throw new UnauthorizedException('User is not logged');
 
     try {
-      const payload = await this.jwtService.verifyAsync<IJwtPayload>(
+      const payload = await this.jwtService.verifyAsync<TokenPayloadDTO>(
         token,
         this.jwtConfiguration,
       );
+
+      const user = await this.userRepository.findOneBy({
+        id: payload.sub,
+        active: true,
+      });
+
+      if (!user) throw new UnauthorizedException('User not authorized');
 
       request[REQUEST_TOKEN_PAYLOAD_KEY] = payload;
     } catch (error) {

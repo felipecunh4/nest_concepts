@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import {
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -10,6 +11,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { HashingService } from 'src/auth/hashing/hashing.service';
+import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
 
 @Injectable()
 export class UsersService {
@@ -58,7 +60,11 @@ export class UsersService {
     return user!;
   }
 
-  async update(id: number, payload: UpdateUserDto) {
+  async update(
+    id: number,
+    payload: UpdateUserDto,
+    tokenPayload: TokenPayloadDTO,
+  ) {
     const userData = {
       name: payload?.name,
     };
@@ -76,13 +82,19 @@ export class UsersService {
 
     if (!userToBeUpdated) this.throwNotFoundError();
 
-    await this.usersRepository.save(userToBeUpdated!);
+    if (userToBeUpdated?.id !== tokenPayload.sub)
+      throw new ForbiddenException('You dont have the necessary permission');
+
+    await this.usersRepository.save(userToBeUpdated);
 
     return userToBeUpdated;
   }
 
-  async remove(id: number) {
+  async remove(id: number, tokenPayload: TokenPayloadDTO) {
     const user = await this.findOne(id);
+
+    if (user.id !== tokenPayload.sub)
+      throw new ForbiddenException('You dont have the necessary permission');
 
     return await this.usersRepository.remove(user);
   }

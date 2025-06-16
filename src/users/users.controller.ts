@@ -18,9 +18,10 @@ import { AuthTokenInterceptor } from 'src/common/interceptors/auth-token.interce
 import { Request } from 'express';
 import { IsAdminGuard } from 'src/common/guards/is-admin.guard';
 import { AuthTokenGuard } from 'src/auth/guard/auth-token.guard';
+import { TokenPayloadParam } from 'src/auth/params/token-payload.param';
+import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
 
 @Controller('users')
-@UseGuards(AuthTokenGuard)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
@@ -46,12 +47,21 @@ export class UsersController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: number, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(id, updateUserDto);
+  @UseGuards(AuthTokenGuard)
+  update(
+    @Param('id') id: number,
+    @Body() updateUserDto: UpdateUserDto,
+    @TokenPayloadParam() tokenPayload: TokenPayloadDTO,
+  ) {
+    return this.usersService.update(id, updateUserDto, tokenPayload);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: number) {
-    return this.usersService.remove(id);
+  @UseGuards(AuthTokenGuard)
+  remove(
+    @Param('id') id: number,
+    @TokenPayloadParam() tokenPayload: TokenPayloadDTO,
+  ) {
+    return this.usersService.remove(id, tokenPayload);
   }
 }

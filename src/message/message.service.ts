@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Message } from './entities/message.entity';
 import { CreateMessageDTO } from './dto/create-message.dto';
 import { UpdateMessageDTO } from './dto/update-message.dto';
@@ -6,6 +10,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UsersService } from 'src/users/users.service';
 import { PaginationDTO } from 'src/common/dto/pagination.dto';
+import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
 
 @Injectable()
 export class MessageService {
@@ -70,9 +75,9 @@ export class MessageService {
     return msg!;
   }
 
-  async create(payload: CreateMessageDTO) {
-    const from = await this.usersService.findOne(payload.fromId);
+  async create(payload: CreateMessageDTO, tokenPayload: TokenPayloadDTO) {
     const to = await this.usersService.findOne(payload.toId);
+    const from = await this.usersService.findOne(tokenPayload.sub);
 
     const msgData = {
       text: payload.text,
@@ -98,21 +103,30 @@ export class MessageService {
     };
   }
 
-  async update(id: number, payload: UpdateMessageDTO) {
+  async update(
+    id: number,
+    payload: UpdateMessageDTO,
+    tokenPayload: TokenPayloadDTO,
+  ) {
     const msg = await this.findOne(id);
 
     msg.text = payload?.text ?? msg.text;
     msg.read = payload?.read ?? msg.read;
+
+    if (msg.from.id !== tokenPayload.sub)
+      throw new ForbiddenException('This is not your message');
+
     await this.messageRepository.save(msg);
 
     return msg;
   }
 
-  async remove(id: number) {
-    const msgToBeRemoved = await this.messageRepository.findOneBy({ id });
+  async remove(id: number, tokenPayload: TokenPayloadDTO) {
+    const msgToBeRemoved = await this.findOne(id);
 
-    if (!msgToBeRemoved) this.throwNotFoundError();
+    if (msgToBeRemoved.from.id !== tokenPayload.sub)
+      throw new ForbiddenException('This is not your message');
 
-    return await this.messageRepository.remove(msgToBeRemoved!);
+    return await this.messageRepository.remove(msgToBeRemoved);
   }
 }
