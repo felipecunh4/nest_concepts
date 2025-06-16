@@ -10,7 +10,7 @@ import { Request } from 'express';
 import jwtConfig from '../config/jwt.config';
 import { ConfigType } from '@nestjs/config';
 import { REQUEST_TOKEN_PAYLOAD_KEY } from '../auth.constants';
-import { TokenPayloadDTO } from '../dto/token-payload.dto';
+import { TokenPayloadDTO, TokenUserPayloadDTO } from '../dto/token-payload.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/users/entities/user.entity';
 import { Repository } from 'typeorm';
@@ -44,7 +44,8 @@ export class AuthTokenGuard implements CanActivate {
 
       if (!user) throw new UnauthorizedException('User not authorized');
 
-      request[REQUEST_TOKEN_PAYLOAD_KEY] = payload;
+      payload['user'] = user;
+      request[REQUEST_TOKEN_PAYLOAD_KEY] = payload as TokenUserPayloadDTO;
     } catch (error) {
       console.log(error);
       throw new UnauthorizedException('Failed to login');

@@ -15,10 +15,9 @@ import { MessageService } from './message.service';
 import { CreateMessageDTO } from './dto/create-message.dto';
 import { UpdateMessageDTO } from './dto/update-message.dto';
 import { PaginationDTO } from 'src/common/dto/pagination.dto';
-import { AuthTokenGuard } from 'src/auth/guard/auth-token.guard';
+import { AuthTokenGuard } from 'src/auth/guards/auth-token.guard';
 import { TokenPayloadParam } from 'src/auth/params/token-payload.param';
-import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
-
+import { TokenUserPayloadDTO } from 'src/auth/dto/token-payload.dto';
 @Controller('message')
 export class MessageController {
   constructor(private readonly messageService: MessageService) {}
@@ -39,7 +38,7 @@ export class MessageController {
   @Post('create')
   create(
     @Body() payload: CreateMessageDTO,
-    @TokenPayloadParam() tokenPayload: TokenPayloadDTO,
+    @TokenPayloadParam() tokenPayload: TokenUserPayloadDTO,
   ) {
     return this.messageService.create(payload, tokenPayload);
   }
@@ -52,7 +51,7 @@ export class MessageController {
   udpate(
     @Param('id') id: number,
     @Body() payload: UpdateMessageDTO,
-    @TokenPayloadParam() tokenPayload: TokenPayloadDTO,
+    @TokenPayloadParam() tokenPayload: TokenUserPayloadDTO,
   ) {
     return this.messageService.update(id, payload, tokenPayload);
   }
@@ -62,7 +61,7 @@ export class MessageController {
   @Delete('delete/:id')
   remove(
     @Param('id') id: number,
-    @TokenPayloadParam() tokenPayload: TokenPayloadDTO,
+    @TokenPayloadParam() tokenPayload: TokenUserPayloadDTO,
   ) {
     return this.messageService.remove(id, tokenPayload);
   }

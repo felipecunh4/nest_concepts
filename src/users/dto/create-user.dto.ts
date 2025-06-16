@@ -1,11 +1,13 @@
 import {
   IsEmail,
+  IsEnum,
   IsNotEmpty,
   IsString,
   IsStrongPassword,
   MaxLength,
   MinLength,
 } from 'class-validator';
+import { ERoutePolicies } from 'src/auth/enums/route-policies.enum';
 
 export class CreateUserDto {
   @IsString()
@@ -25,4 +27,7 @@ export class CreateUserDto {
     minSymbols: 1,
   })
   password: string;
+
+  @IsEnum(ERoutePolicies, { each: true })
+  roles: ERoutePolicies[];
 }

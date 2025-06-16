@@ -1,4 +1,5 @@
 import { IsEmail } from 'class-validator';
+import { ERoutePolicies } from 'src/auth/enums/route-policies.enum';
 import { Message } from 'src/message/entities/message.entity';
 import {
   Column,
@@ -38,4 +39,7 @@ export class User {
 
   @Column({ default: true })
   active: boolean;
+
+  @Column({ type: 'simple-array', default: [] })
+  roles: ERoutePolicies[];
 }

@@ -10,7 +10,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UsersService } from 'src/users/users.service';
 import { PaginationDTO } from 'src/common/dto/pagination.dto';
-import { TokenPayloadDTO } from 'src/auth/dto/token-payload.dto';
+import { TokenUserPayloadDTO } from 'src/auth/dto/token-payload.dto';
 
 @Injectable()
 export class MessageService {
@@ -75,7 +75,7 @@ export class MessageService {
     return msg!;
   }
 
-  async create(payload: CreateMessageDTO, tokenPayload: TokenPayloadDTO) {
+  async create(payload: CreateMessageDTO, tokenPayload: TokenUserPayloadDTO) {
     const to = await this.usersService.findOne(payload.toId);
     const from = await this.usersService.findOne(tokenPayload.sub);
 
@@ -106,7 +106,7 @@ export class MessageService {
   async update(
     id: number,
     payload: UpdateMessageDTO,
-    tokenPayload: TokenPayloadDTO,
+    tokenPayload: TokenUserPayloadDTO,
   ) {
     const msg = await this.findOne(id);
 
@@ -121,7 +121,7 @@ export class MessageService {
     return msg;
   }
 
-  async remove(id: number, tokenPayload: TokenPayloadDTO) {
+  async remove(id: number, tokenPayload: TokenUserPayloadDTO) {
     const msgToBeRemoved = await this.findOne(id);
 
     if (msgToBeRemoved.from.id !== tokenPayload.sub)
