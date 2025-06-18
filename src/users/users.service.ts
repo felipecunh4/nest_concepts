@@ -21,7 +21,7 @@ export class UsersService {
     private readonly hashingService: HashingService,
   ) {}
 
-  throwNotFoundError() {
+  private throwNotFoundError() {
     throw new NotFoundException('User not found');
   }
 

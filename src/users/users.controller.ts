@@ -7,7 +7,6 @@ import {
   Param,
   Delete,
   UseInterceptors,
-  Req,
   UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
@@ -43,11 +42,8 @@ export class UsersController {
   @Get()
   @UseInterceptors(ChangeDataInterceptor, AuthTokenInterceptor)
   @UseGuards(IsAdminGuard)
-  findAll(@Req() req: Request) {
-    console.log(
-      '[UserController] Getting user on request header...',
-      req['user'],
-    );
+  // findAll(@Req() req: Request) {
+  findAll() {
     return this.usersService.findAll();
   }
 
