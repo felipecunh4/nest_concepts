@@ -15,8 +15,8 @@ import { MyExceptionFilter } from '../common/exception-filters/my-exception.filt
 import { ErrorExceptionFilter } from '../common/exception-filters/error-exception.filter';
 import { ConfigModule, ConfigType } from '@nestjs/config';
 import * as Joi from 'joi';
-import appConfig from './app.config';
 import { AuthModule } from 'src/auth/auth.module';
+import globalConfig from 'src/global-config/global-config';
 
 @Module({
   imports: [
@@ -35,9 +35,9 @@ import { AuthModule } from 'src/auth/auth.module';
     TypeOrmModule.forRootAsync({
       // imports: [ConfigModule],
       // para configurações por módulo/parciais, utilizar o forFeature
-      imports: [ConfigModule.forFeature(appConfig)],
-      inject: [appConfig.KEY],
-      useFactory: (config: ConfigType<typeof appConfig>) => {
+      imports: [ConfigModule.forFeature(globalConfig)],
+      inject: [globalConfig.KEY],
+      useFactory: (config: ConfigType<typeof globalConfig>) => {
         return {
           type: config.database.type,
           host: config.database.host,
